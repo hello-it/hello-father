@@ -1,2 +1,2 @@
-# Telegram
+# Telegram Bot
 token = 'XXX'
