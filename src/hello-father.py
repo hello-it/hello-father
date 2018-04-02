@@ -12,39 +12,61 @@ from config import token
 
 bot = TeleBot(token)
 
-create_context = {
-    'open': False,
-    'chat_name': None
-}
+create_context = {}
+
+
+@bot.message_handler(commands=['login', 'start', 'signin', 'signup'])
+def start(request):
+    def process(message):
+        user_id = message.chat.id
+        create_context[user_id] = create_empty_context()
+        #bot.send_message(user_id, help_message())
+
+    process(request)
 
 
 @bot.message_handler(commands=['newchat'])
-def new_chat(message):
-    create_context['open'] = True
-    bot.send_message(message.chat.id, new_chat_message())
+def new_chat(request):
+    def process(message):
+        user_id = message.chat.id
+        create_context[user_id]['open'] = True
+        bot.send_message(user_id, new_chat_message())
+
+    start(request)
+    process(request)
 
 
 @bot.message_handler(func=lambda message: True, content_types=['text'])
-def text(message):
-    if create_context['open']:
-        chat_name = message.text
-        if is_valid_chat_name(chat_name):
-            create_context['chat_name'] = chat_name
-            create_context['open'] = False
-            bot.send_message(message.chat.id, chat_created_by_link_message(convert_chat_name_to_link(chat_name)))
+def text(request):
+    def process(message):
+        user_id = message.chat.id
+        if create_context[user_id]['open']:
+            chat_name = message.text
+            if is_valid_chat_name(chat_name):
+                create_context[user_id]['chat_name'] = chat_name
+                create_context[user_id]['open'] = False
+
+                bot.send_message(user_id, chat_created_by_link_message(convert_chat_name_to_link(chat_name)))
+            else:
+                bot.send_message(user_id, chat_name_mistake_message())
         else:
-            bot.send_message(message.chat.id, chat_name_mistake_message())
-    else:
-        help(message)
+            help(message)
+
+    process(request)
 
 
 @bot.message_handler(commands=['help'])
-def help(message):
-    bot.send_message(message.chat.id, help_message())
+def help(request):
+    def process(message):
+        user_id = message.chat.id
+        bot.send_message(user_id, help_message())
+
+    start(request)
+    process(request)
 
 
 if __name__ == '__main__':
     try:
         bot.polling(none_stop=True)
     except BaseException:
-        print 'Connection refused'
+        print('Connection refused')

@@ -1,3 +1,4 @@
 pyTelegramBotAPI
+telethon
 requests
 six
