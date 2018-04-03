@@ -13,6 +13,18 @@ def logged_message():
     return 'Welcome again to Hello Father Bot!'
 
 
+def enter_phone_number_message():
+    return 'Please, enter phone number:'
+
+
+def enter_access_code_message():
+    return 'Please, enter access code:'
+
+
+def successfully_logged_in_message(name):
+    return 'You logged in successfully as ' + name
+
+
 def help_message():
     return 'I can help you create chats under @hello_community platform.\n\n' + \
            'You can control me by sending these commands:\n\n' + \

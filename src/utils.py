@@ -4,7 +4,8 @@ import re
 def create_empty_context():
     return {
         'open': False,
-        'chat_name': None
+        'phone_number': False,
+        'access_code': False
     }
 
 
@@ -20,4 +21,4 @@ def retrieve_name_from_message(message):
     try:
         return message.chat.first_name + ' ' + message.chat.last_name
     except BaseException:
-        return message.username
+        return message.chat.username
