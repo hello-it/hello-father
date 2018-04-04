@@ -9,6 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'resources'))
 from config import api_id, api_hash
 
 from telethon import TelegramClient
+from telethon import utils
 from telethon.tl.functions.channels import *
 from telethon.errors.rpc_error_list import *
 from telethon.tl.types import *
@@ -44,14 +45,16 @@ def telegram_start(user_id):
         data = context[user_id]
         client = data['client']
         phone_number = data['phone_number']
-        access_code = data['access_code']
-        client.start(phone_number, access_code)
+        access_code = data['access_code'].replace('code', '')
+
+        user = client.sign_in(phone=phone_number, code=access_code)
+        print('Successfully logged in as ' + utils.get_display_name(user))
 
 
 def create_telegram_chat(chat_name, creator_id):
     client = context[creator_id]['client']
 
-    print('New chat name: ' + str(chat_name))
+    print('\nNew chat name: ' + str(chat_name))
 
     new_chat_id = create_chat(client, chat_name)
     print('New chat id: ' + str(new_chat_id))
@@ -63,7 +66,7 @@ def create_telegram_chat(chat_name, creator_id):
     print('New chat link: ' + str(new_chat_link))
 
     invite_and_add_admins(client, new_chat_id, creator_id)
-    print('Admins have invited and upgraded')
+    print('Admins have invited and upgraded\n')
 
     return new_chat_link
 
@@ -103,42 +106,47 @@ def create_chat_link(client, chat_id, chat_name):
 
 
 def invite_and_add_admins(client, chat_id, creator_id):
-    client(InviteToChannelRequest(
-        channel=client.get_entity(chat_id),
-        users=[client.get_entity(63756324), client.get_entity(202319269)]
-    ))
-
-    full_rights = ChannelAdminRights(
-        post_messages=True,
-        add_admins=True,
-        invite_users=True,
-        change_info=True,
-        ban_users=True,
-        delete_messages=True,
-        pin_messages=True,
-        invite_link=True,
-        edit_messages=True
-    )
-
     try:
+        chat = client.get_entity(chat_id)
+        creator = client.get_entity(creator_id)
+        vadim = client.get_entity('@vadimkiselev')
+        alex = client.get_entity('@kvendingoldo')
+
+        client(InviteToChannelRequest(
+            channel=client.get_entity(chat_id),
+            users=[vadim, alex]
+        ))
+
+        full_rights = ChannelAdminRights(
+            post_messages=True,
+            add_admins=True,
+            invite_users=True,
+            change_info=True,
+            ban_users=True,
+            delete_messages=True,
+            pin_messages=True,
+            invite_link=True,
+            edit_messages=True
+        )
+
         # Creator
         client(EditAdminRequest(
-            channel=client.get_entity(chat_id),
-            user_id=client.get_entity(creator_id),
+            channel=chat,
+            user_id=creator,
             admin_rights=full_rights
         ))
 
         # Vadim Kiselev
         client(EditAdminRequest(
-            channel=client.get_entity(chat_id),
-            user_id=client.get_entity(63756324),
+            channel=chat,
+            user_id=vadim,
             admin_rights=full_rights
         ))
 
         # Alexander Sharov
         client(EditAdminRequest(
-            channel=client.get_entity(chat_id),
-            user_id=client.get_entity(202319269),
+            channel=chat,
+            user_id=alex,
             admin_rights=full_rights
         ))
     except UserIdInvalidError as exception:
