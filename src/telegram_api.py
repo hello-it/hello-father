@@ -109,12 +109,19 @@ def invite_and_add_admins(client, chat_id, creator_id):
     try:
         chat = client.get_entity(chat_id)
         creator = client.get_entity(creator_id)
-        vadim = client.get_entity('@vadimkiselev')
-        alex = client.get_entity('@kvendingoldo')
+
+        vadim_username = '@vadimkiselev'
+        vadim = client.get_entity(vadim_username)
+
+        alex_username = '@kvendingoldo'
+        alex = client.get_entity(alex_username)
+
+        vlad_username = '@VBeskrovnov'
+        vlad = client.get_entity(vlad_username)
 
         client(InviteToChannelRequest(
             channel=client.get_entity(chat_id),
-            users=[vadim, alex]
+            users=[vadim_username, alex_username, vlad_username]
         ))
 
         full_rights = ChannelAdminRights(
