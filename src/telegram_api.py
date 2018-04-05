@@ -65,7 +65,7 @@ def create_telegram_chat(chat_name, creator_id):
     new_chat_link = create_chat_link(client, new_chat_id, chat_name)
     print('New chat link: ' + str(new_chat_link))
 
-    invite_and_add_admins(client, new_chat_id, creator_id)
+    invite_and_add_admins(client, new_chat_id)
     print('Admins have invited and upgraded\n')
 
     return new_chat_link
@@ -105,10 +105,9 @@ def create_chat_link(client, chat_id, chat_name):
     return new_chat_link
 
 
-def invite_and_add_admins(client, chat_id, creator_id):
+def invite_and_add_admins(client, chat_id):
     try:
         chat = client.get_entity(chat_id)
-        creator = client.get_entity(creator_id)
 
         vadim_username = '@vadimkiselev'
         vadim = client.get_entity(vadim_username)
@@ -116,12 +115,11 @@ def invite_and_add_admins(client, chat_id, creator_id):
         alex_username = '@kvendingoldo'
         alex = client.get_entity(alex_username)
 
-        vlad_username = '@VBeskrovnov'
-        vlad = client.get_entity(vlad_username)
+        vadim_b_username = '@VBeskrovnov'
 
         client(InviteToChannelRequest(
-            channel=client.get_entity(chat_id),
-            users=[vadim_username, alex_username, vlad_username]
+            channel=chat,
+            users=[vadim_username, alex_username, vadim_b_username]
         ))
 
         full_rights = ChannelAdminRights(
@@ -136,25 +134,27 @@ def invite_and_add_admins(client, chat_id, creator_id):
             edit_messages=True
         )
 
-        # Creator
-        client(EditAdminRequest(
-            channel=chat,
-            user_id=creator,
-            admin_rights=full_rights
-        ))
+        try:
+            # Vadim Kiselev
+            client(EditAdminRequest(
+                channel=chat,
+                user_id=vadim,
+                admin_rights=full_rights
+            ))
+        except UserIdInvalidError as exception:
+            print('Vadim Kiselev hasn\'t been provided to admin because of:')
+            print(exception)
 
-        # Vadim Kiselev
-        client(EditAdminRequest(
-            channel=chat,
-            user_id=vadim,
-            admin_rights=full_rights
-        ))
+        try:
+            # Alexander Sharov
+            client(EditAdminRequest(
+                channel=chat,
+                user_id=alex,
+                admin_rights=full_rights
+            ))
+        except UserIdInvalidError as exception:
+            print('Alexander Sharov hasn\'t been provided to admin because of:')
+            print(exception)
 
-        # Alexander Sharov
-        client(EditAdminRequest(
-            channel=chat,
-            user_id=alex,
-            admin_rights=full_rights
-        ))
     except UserIdInvalidError as exception:
         print(exception)
